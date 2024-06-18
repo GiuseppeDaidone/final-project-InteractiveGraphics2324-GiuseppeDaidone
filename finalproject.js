@@ -139,7 +139,6 @@ class MeshDrawer
         gl.vertexAttribPointer(this.normalPos, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(this.normalPos);
 
-		
         // Bind texture
         if(this.texture != null && this.showTextureFlag)
 		{
@@ -220,7 +219,7 @@ class MeshDrawer
 		const lightColorUniform = gl.getUniformLocation(this.prog, 'lightColor');
 		gl.useProgram(this.prog);
 		gl.uniform3f(lightDirUniform, x, y, z);
-		gl.uniform3f(lightColorUniform, 1.0, 1.0, 1.0); // white light
+		gl.uniform3f(lightColorUniform, 0.96, 0.96, 0.96); // natural white light
 	}
 	
 	// This method is called to set the shininess of the material

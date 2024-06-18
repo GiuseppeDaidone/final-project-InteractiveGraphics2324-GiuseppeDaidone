@@ -154,7 +154,7 @@ var boxDrawer;
 var pointDrawer;
 var meshDrawer;
 var canvas, gl;
-var rotX=0, rotY=0, transY=0, transZ=3;
+var rotX=0, rotY=0, transY=0, transZ=3, autorot=0;
 var MV, MVP; // view matrices
 
 // Called once to initialize
@@ -218,7 +218,7 @@ function ProjectionMatrix( c, z, fov_angle=60 )
 function UpdateViewMatrices()
 {
 	var perspectiveMatrix = ProjectionMatrix( canvas, transZ );
-	MV  = GetModelViewMatrix( 0, transY, transZ, rotX, rotY );
+	MV  = GetModelViewMatrix( 0, transY, transZ, rotX, autorot+rotY );
 	MVP = MatrixMult( perspectiveMatrix, MV );
 }
 
@@ -884,6 +884,7 @@ window.onload = function() {
 	canvas.resetView = function() {
 		rotX = 0;
 		rotY = 0;
+		autorot = 0;
 		transY = 0;
 		transZ = 3;
 		UpdateViewMatrices();
@@ -903,6 +904,25 @@ function WindowResize()
 {
 	UpdateCanvasSize();
 	DrawScene();
+}
+
+var timer;
+function AutoRotate( param )
+{
+	if ( param.checked ) {
+		timer = setInterval( function() {
+				var v = document.getElementById('rotation-speed').value;
+				autorot += 0.0005 * v;
+				if ( autorot > 2*Math.PI ) autorot -= 2*Math.PI;
+				UpdateViewMatrices();
+				DrawScene();
+			}, 30
+		);
+		document.getElementById('rotation-speed').disabled = false;
+	} else {
+		clearInterval( timer );
+		document.getElementById('rotation-speed').disabled = true;
+	}
 }
 
 function MousePos()
@@ -1204,7 +1224,7 @@ input[type=button] {
 <div class="control"><input type="button" value="Start Simulation" onclick="massSpring.toggleSimulation(this)"></div>
 <div class="control"><input type="button" value="Reset" onclick="massSpring.reset();DrawScene()"></div>
 <div class="control"><input id="cloth-simulation" name="cloth-simulation" type="checkbox"/><label for="cloth-simulation"> Cloth Simulation</label></div>
-<div class="control"><span id="timestep-label">Time Step Size:</span><span class="value" id="timestep-value">20 ms</span><input id="timestep" type="range" min="1" max="100" value="20" oninput="SetTimeStepSize(this)" onchange="massSpring.restartSimulation()" ondblclick="this.value=20;this.oninput();this.onchange()"/></div>
+<div class="control"><span id="timestep-label">Time Step:</span><span class="value" id="timestep-value">20 ms</span><input id="timestep" type="range" min="1" max="100" value="20" oninput="SetTimeStepSize(this)" onchange="massSpring.restartSimulation()" ondblclick="this.value=20;this.oninput();this.onchange()"/></div>
 <div class="control"><span id="gravity-label">Gravity:</span><span class="value" id="gravity-value">1</span><input id="gravity" type="range" min="0" max="100" value="20" oninput="SetGravity(this)" ondblclick="this.value=20;this.oninput()"/></div>
 <div class="control"><span id="mass-label">Mass:</span><span class="value" id="mass-value">1</span><input id="mass" type="range" min="1" max="100" value="20" oninput="SetMass(this)" ondblclick="this.value=20;this.oninput()"/></div>
 <div class="control"><span id="stiffness-label">Stiffness:</span><span class="value" id="stiffness-value">1</span><input id="stiffness" type="range" min="0" max="100" value="20" oninput="SetStiffness(this)" ondblclick="this.value=20;this.oninput()"/></div>
@@ -1214,6 +1234,8 @@ input[type=button] {
 <div class="control"><input id="show-box" name="show-box" type="checkbox" onchange="DrawScene()" checked /><label for="show-box"> Show Box</label></div>
 <div class="control"><input id="show-texture" name="show-texture" type="checkbox" onchange="ShowTexture(this)" checked /><label for="show-texture"> Show Texture</label></div>
 <div class="control"><input id="swap-yz" name="swap-yz" type="checkbox" onchange="SwapYZ(this)" /><label for="swap-yz"> Swap Y-Z Axes</label></div>
+<div class="control"><input id="auto-rotate" name="auto-rotate" type="checkbox" onchange="AutoRotate(this)"/><label for="auto-rotate"> Auto Rotation</label></div>
+<div class="control"><input id="rotation-speed" type="range" min="1" max="100" value="50" ondblclick="this.value=50;this.oninput()" disabled/></div>
 <div class="control"><span id="shininess-label">Shininess:</span><span class="value" id="shininess-value">1</span><input id="shininess-exp" type="range" min="0" max="100" value="50" oninput="SetShininess(this)" ondblclick="this.value=50;this.oninput()"/></div>
 <div class="control"><span id="ambientcolor-label">Ambient HEX:</span><span class="value" id="ambientcolor-value">#0</span><input id="ambientcolor-exp" type="range" min="0" max="16777215" value="0" oninput="SetAmbientColor(this)" ondblclick="this.value=0;this.oninput()"/></div>
 <div class="control">
